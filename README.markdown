@@ -1,4 +1,4 @@
-![https://dl.dropboxusercontent.com/u/174179/rhizome/rhizome.jpg]()
+![](https://dl.dropboxusercontent.com/u/174179/rhizome/rhizome.jpg)
 
 Rhizome is a library for visualizing graph and tree structures.
 
@@ -51,7 +51,7 @@ nil
     :node->descriptor (fn [n] {:label (pr-str n)}))
 ```
 
-![https://dl.dropboxusercontent.com/u/174179/rhizome/example_graph.png]()
+![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_graph.png)
 
 While trees are a special case of graphs, using `view-graph` to visualize trees can be a little indirect.  To make this simpler, there's a `view-tree` function, which is modeled after Clojure's `tree-seq` operator.  This function takes three parameters, `branch?`, `children`, and `root`, followed by zero or more of the keyword arguments taken by `view-graph`.  This can make it easy to visualize hierarchical structures:
 
@@ -62,7 +62,7 @@ While trees are a special case of graphs, using `view-graph` to visualize trees 
     :node->descriptor (fn [n] {:label (when (number? n) (str n))}))
 ```
 
-![https://dl.dropboxusercontent.com/u/174179/rhizome/example_tree.png]()
+![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_tree.png)
 
 ## License
 
