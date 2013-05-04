@@ -32,7 +32,7 @@ The core function is `rhizome.viz/view-graph`.  It takes two parameters: `nodes`
 | `:edge->descriptor` | takes the source and destination node, and returns a map of attributes onto values describing how the edge should be rendered |
 | `:options` | a map of attributes onto values describing how the graph should be rendered |
 
-The rendering attributes described by `:node->descriptor`, `:edge->descriptor`, and `:option` are described in detail [here](http://www.graphviz.org/content/attrs).  String and keyword values are interchangeable.
+The rendering attributes described by `:node->descriptor`, `:edge->descriptor`, and `:options` are described in detail [here](http://www.graphviz.org/content/attrs).  String and keyword values are interchangeable.
 
 The most commonly-used attributes are `label`, which describes the text overlaid on a node or edge, and `shape`, the options for which are described [here](http://www.graphviz.org/content/node-shapes).  For the `:options`, it's sometimes useful to adjust the `dpi`, which controls the size of the image.
 
