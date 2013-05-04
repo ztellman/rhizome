@@ -163,7 +163,8 @@
   [branch? children root
    & {:keys [vertical?
              node->descriptor
-             edge->descriptor]
+             edge->descriptor
+             options]
       :or {vertical? true
            node->descriptor (constantly {:label ""})
            edge->descriptor (constantly nil)}}]
@@ -180,5 +181,6 @@
     (graph->dot nodes #(@node->children %)
       :directed? true
       :vertical? vertical?
+      :options options
       :node->descriptor (comp node->descriptor second)
       :edge->descriptor (fn [a b] (edge->descriptor (second a) (second b))))))
