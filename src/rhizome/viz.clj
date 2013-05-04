@@ -20,7 +20,7 @@
           image-icon (ImageIcon.)]
       (doto frame
         (.add (-> image-icon JLabel. JScrollPane.))
-        (.setSize 1024 480)
+        (.setSize 1024 768)
         (.setDefaultCloseOperation javax.swing.WindowConstants/HIDE_ON_CLOSE))
       [frame image-icon])))
 

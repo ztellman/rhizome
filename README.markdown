@@ -7,7 +7,7 @@ Rhizome is a library for visualizing graph and tree structures.
 To include in your project, add this to your `project.clj`:
 
 ```clj
-[rhizome "0.1.0"]
+[rhizome "0.1.1"]
 ```
 
 
@@ -21,34 +21,33 @@ Use of this project requires that [Graphviz](http://www.graphviz.org) is install
 
 There are two namespaces, `rhizome.dot` and `rhizome.viz`.  The former will take a graph and return a string representation of a Graphviz dot file, the latter takes graphs and renders or displays them.  In practice, you should only need to use `rhizome.viz`.
 
-The core function is `rhizome.viz/view-graph`.  It takes the following keyword arguments:
+The core function is `rhizome.viz/view-graph`.  It takes two parameters: `nodes`, which is a list of nodes in the graph, and `adjacent`, which is a function that takes a node and returns adjacent nodes.  These can be followed by zero or more of the following keyword arguments:
 
-| name | required? | description |
-|------|-----------|-------------|
-| `:nodes` | yes | a list of the nodes within the graph |
-| `:adjacent` | yes | a function that takes a node, and returns adjacent nodes |
-| `:directed?` | no | whether the graph should be rendered as a directed graph, defaults to true |
-| `:vertical?` | no | whether the graph should be rendered top-to-bottom, defaults to true |
-| `:node->descriptor` | no | takes a node, and returns a map of attributes onto values describing how the node should be rendered |
-| `:edge->descriptor` | no | takes the source and destination node, and returns a map of attributes onto values describing how the edge should be rendered |
-| `:options` | no | a map of attributes onto values describing how the graph should be rendered |
 
-The rendering attributes described by `:node->descriptor`, `:edge->descriptor`, and `:option` are described in detail [here](http://www.graphviz.org/content/attrs).  The most commonly-used attributes are `label`, which describes the text overlaid on a node or edge, and `shape`, the options for which are described [here](http://www.graphviz.org/content/node-shapes).  For the `:options`, it's sometimes useful to adjust the `dpi`, which controls the size of the image.
+| name | description |
+|------|-------------|
+| `:directed?` | whether the graph should be rendered as a directed graph, defaults to true |
+| `:vertical?` | whether the graph should be rendered top-to-bottom, defaults to true |
+| `:node->descriptor` | takes a node, and returns a map of attributes onto values describing how the node should be rendered |
+| `:edge->descriptor` | takes the source and destination node, and returns a map of attributes onto values describing how the edge should be rendered |
+| `:options` | a map of attributes onto values describing how the graph should be rendered |
+
+The rendering attributes described by `:node->descriptor`, `:edge->descriptor`, and `:option` are described in detail [here](http://www.graphviz.org/content/attrs).  String and keyword values are interchangeable.
+
+The most commonly-used attributes are `label`, which describes the text overlaid on a node or edge, and `shape`, the options for which are described [here](http://www.graphviz.org/content/node-shapes).  For the `:options`, it's sometimes useful to adjust the `dpi`, which controls the size of the image.
 
 An example:
 
 ```clj
 > (use 'rhizome.viz)
 nil
-> (def g 
+> (def g
     {:a [:b :c]
 	 :b [:c]
 	 :c [:a]})
 #'g
-> (view-graph
-    :nodes (keys g)
-    :adjacent g
-    :node->descriptor (fn [n] {:label (pr-str n)}))
+> (view-graph (keys g) g
+    :node->descriptor (fn [n] {:label n}))
 ```
 
 ![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_graph.png)
@@ -59,10 +58,21 @@ While trees are a special case of graphs, using `view-graph` to visualize trees 
 > (def t [[1 [2 3]] [4 [5]]])
 #'t
 > (view-tree sequential? seq t
-    :node->descriptor (fn [n] {:label (when (number? n) (str n))}))
+    :node->descriptor (fn [n] {:label (when (number? n) n)}))
 ```
 
 ![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_tree.png)
+
+If the value for `label` is not a string or a keyword, typically it will be displayed as a string representation of the value.  However, if the value is sequential, then the node will be displayed as a `Record` type:
+
+```clj
+> (def t '([1 2] ([3 4] ([5 6 7]))))
+#'t
+> (view-tree list? seq t
+    :node->descriptor (fn [n] {:label (when (vector? n) n)}))
+```
+
+![](https://dl.dropboxusercontent.com/u/174179/rhizome/tree_record_example.png)
 
 ## License
 

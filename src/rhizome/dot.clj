@@ -5,32 +5,15 @@
 
 (def ^:private escapable-characters "|{}\"")
 
-(defn- escape-string [s]
+(defn- escape-string
+  "Escape characters that are significant for the dot format."
+  [s]
   (reduce
     #(str/replace %1 (str %2) (str "\\" %2))
     s
     escapable-characters))
 
-(def ^:private edge-fields
-  [:label
-   :style
-   :shape
-   :ltail
-   :lhead
-   :arrowhead
-   :fontname])
-
-(def ^:private node-fields
-  [:label
-   :fontcolor
-   :color
-   :width
-   :height
-   :fontname
-   :arrowhead
-   :style
-   :shape
-   :peripheries])
+;;;
 
 (def ^:private default-options
   {:dpi 150})
@@ -41,11 +24,40 @@
 (def ^:private default-edge-options
   {:fontname "Monospace"})
 
+;;;
+
+(def ^:private option-translations
+  {:vertical? [:rankdir {true :TP, false :LR}]})
+
+(defn translate-options [m]
+  (->> m
+    (map
+      (fn [[k v]]
+        (if-let [[k* f] (option-transforms k)]
+          [k* (f v)]
+          [k v])))
+    (into {})))
+
+;;;
+
+(defn ->literal [s]
+  ^::literal [s])
+
+(defn literal? [x]
+  (-> x meta ::literal))
+
+(defn unwrap-literal [x]
+  (if (literal? x)
+    (first x)
+    x))
+
+;;;
+
 (defn- format-options-value [v]
   (cond
     (string? v) (str \" (escape-string v) \")
     (keyword? v) (name v)
-    (coll? v) (if (= ::literal (-> v meta :tag))
+    (coll? v) (if (literal? v)
                 (str "\"" (first v) "\"")
                 (str "\""
                   (->> v
@@ -66,45 +78,42 @@
 
 (defn- format-edge [src dst options]
   (str src " -> " dst "["
-    (->> edge-fields 
-      (select-keys options)
-      (format-options ", "))
+    (format-options ", " options)
     "]"))
+
+(defn format-label [label]
+  (if-not (sequential? label)
+    (if label
+      (pr-str label)
+      "")
+    (->> label
+      (map #(str "{ " (-> % format-label unwrap-literal) " }"))
+      (interpose " | ")
+      (apply str)
+      ->literal)))
 
 (defn- format-node [id {:keys [label shape] :as options}]
   (let [shape (or shape
                 (when (sequential? label)
                   :record))
-        label (if-not (sequential? label)
-                (or label "")
-                ^::literal
-                [(str "{"
-                   (->> label
-                     (map pr-str)
-                     (map escape-string)
-                     (interpose " | ")
-                     (apply str))
-                   "}")])
+        label (format-label label)
         options (assoc options
                   :label label
                   :shape shape)]
     (str id "["
-     (->> node-fields 
-       (select-keys options)
-       (format-options ", "))
-     "]")))
+      (format-options ", " options)
+      "]")))
 
 ;;;
 
 (defn graph->dot
   "Takes a description of a graph, and returns a string describing a GraphViz dot file.
 
-   The two required fields are `nodes`, which is a list of nodes in the graph, and `adjacent`,
-   which is a function that takes a node, and returns a list of adjacent nodes."
-  [& {:keys [directed?
+   Requires two fields: `nodes`, which is a list of the nodes in the graph, and `adjacent`, which
+   is a function tha takes a node and returns a list of adjacent nodes."
+  [nodes adjacent
+   & {:keys [directed?
              vertical?
-             nodes
-             adjacent
              options
              node->descriptor
              edge->descriptor]
@@ -112,7 +121,8 @@
            vertical? true
            node->descriptor (constantly nil)
            edge->descriptor (constantly nil)}}]
-  (let [node->id (memoize (fn [_] (gensym "node")))]
+  (let [node->id (memoize (fn [_] (gensym "node")))
+        ]
     (apply str
       (if directed?
         "digraph"
@@ -120,8 +130,11 @@
       " {\n"
 
       ;; global options
-      (when-not (empty? options)
-        (str "graph[" (format-options "\n" options) "]\n"))
+      (str "graph["
+        (->> (assoc options :vertical? vertical?)
+          translate-options
+          (format-options "\n"))
+        "]\n")
 
       (interpose "\n"
         (concat
@@ -164,10 +177,8 @@
                       (children (second x))))
                   (@node->children x))
                 [(Object.) root])]
-    (graph->dot
+    (graph->dot nodes #(@node->children %)
       :directed? true
-      :nodes nodes
-      :adjacent #(@node->children %)
       :vertical? vertical?
       :node->descriptor (comp node->descriptor second)
       :edge->descriptor (fn [a b] (edge->descriptor (second a) (second b))))))
