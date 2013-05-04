@@ -63,7 +63,7 @@ While trees are a special case of graphs, using `view-graph` to visualize trees 
 
 ![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_tree.png)
 
-If the value for `label` is not a string or a keyword, typically it will be displayed as a string representation of the value.  However, if the value is sequential, then the node will be displayed as a `Record` type:
+If the value for `label` is not a string, typically it will be displayed as a string representation of the value.  However, if the value is sequential, then the node will be displayed as a `Record` type:
 
 ```clj
 > (def t '([1 2] ([3 4] ([5 6 7]))))
