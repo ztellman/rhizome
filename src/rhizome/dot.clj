@@ -76,21 +76,33 @@
     (interpose ", ")
     (apply str)))
 
-(defn- format-edge [src dst options]
-  (str src " -> " dst "["
-    (format-options ", " options)
-    "]"))
-
 (defn format-label [label]
-  (if-not (sequential? label)
-    (if label
-      (pr-str label)
-      "")
+  (cond
+    (sequential? label)
     (->> label
       (map #(str "{ " (-> % format-label unwrap-literal) " }"))
       (interpose " | ")
       (apply str)
-      ->literal)))
+      ->literal)
+
+    (string? label)
+    label
+
+    (nil? label)
+    ""
+
+    :else
+    (pr-str label)))
+
+(defn- format-edge [src dst {:keys [label] :as options}]
+  (let [label (format-label
+                (if (sequential? label)
+                  (pr-str label)
+                  label))
+        options (assoc options :label label)]
+    (str src " -> " dst "["
+      (format-options ", " options)
+      "]")))
 
 (defn- format-node [id {:keys [label shape] :as options}]
   (let [shape (or shape

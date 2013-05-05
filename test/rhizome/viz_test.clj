@@ -17,13 +17,16 @@
 
 (deftest test-viz
   (view-graph (keys g) g
-    :node->descriptor (fn [n] {:label n}))
-  (Thread/sleep 1000)
+    :node->descriptor (fn [n] {:label n})
+    :edge->descriptor (fn [src dst] {:label (str src " -> " dst)}))
+  (Thread/sleep 2000)
 
   (view-tree sequential? seq t-0
-    :node->descriptor (fn [n] {:label (when (number? n) n)}))
-  (Thread/sleep 1000)
+    :node->descriptor (fn [n] {:label (when (number? n) (str n))}))
+  (Thread/sleep 2000)
 
   (view-tree list? seq t-1
     :node->descriptor (fn [n] {:label (when (vector? n) n)}))
-  (Thread/sleep 1000))
+  (Thread/sleep 2000)
+
+  )
