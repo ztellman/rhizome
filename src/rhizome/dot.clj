@@ -33,7 +33,7 @@
   (->> m
     (map
       (fn [[k v]]
-        (if-let [[k* f] (option-transforms k)]
+        (if-let [[k* f] (option-translations k)]
           [k* (f v)]
           [k v])))
     (into {})))
@@ -58,7 +58,7 @@
     (string? v) (str \" (escape-string v) \")
     (keyword? v) (name v)
     (coll? v) (if (literal? v)
-                (str "\"" (first v) "\"")
+                (str "\"" (unwrap-literal v) "\"")
                 (str "\""
                   (->> v
                     (map format-options-value)

@@ -1,4 +1,4 @@
-(defproject rhizome "0.1.2"
+(defproject rhizome "0.1.3"
   :description "an easy way to visualize graphs"
   :license {:name "MIT License"
             :url "http://opensource.org/licenses/MIT"}
