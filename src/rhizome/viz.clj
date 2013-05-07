@@ -24,7 +24,7 @@
         (.setDefaultCloseOperation javax.swing.WindowConstants/HIDE_ON_CLOSE))
       [frame image-icon])))
 
-(def default-frame (create-frame "rhizome"))
+(defonce default-frame (create-frame "rhizome"))
 
 (defn- send-to-front
   "Makes absolutely, completely sure that the frame is moved to the front."

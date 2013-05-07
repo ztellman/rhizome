@@ -7,7 +7,7 @@ Rhizome is a library for visualizing graph and tree structures.
 To include in your project, add this to your `project.clj`:
 
 ```clj
-[rhizome "0.1.4"]
+[rhizome "0.1.5"]
 ```
 
 
@@ -21,7 +21,9 @@ Use of this project requires that [Graphviz](http://www.graphviz.org) is install
 
 There are two namespaces, `rhizome.dot` and `rhizome.viz`.  The former will take a graph and return a string representation of a Graphviz dot file, the latter takes graphs and renders or displays them.  In practice, you should only need to use `rhizome.viz`.
 
-The core function is `rhizome.viz/view-graph`.  It takes two parameters: `nodes`, which is a list of nodes in the graph, and `adjacent`, which is a function that takes a node and returns adjacent nodes.  These can be followed by zero or more of the following keyword arguments:
+The core function is `rhizome.viz/view-graph`.  It takes two parameters: `nodes`, which is a list of nodes in the graph, and `adjacent`, which is a function that takes a node and returns adjacent nodes.  Nodes can be of any type you like, as long as the objects in `nodes` and the objects returned by `adjacent` are equivalent.
+
+These can be followed by zero or more of the following keyword arguments:
 
 
 | name | description |
@@ -31,10 +33,13 @@ The core function is `rhizome.viz/view-graph`.  It takes two parameters: `nodes`
 | `:node->descriptor` | takes a node, and returns a map of attributes onto values describing how the node should be rendered |
 | `:edge->descriptor` | takes the source and destination node, and returns a map of attributes onto values describing how the edge should be rendered |
 | `:options` | a map of attributes onto values describing how the graph should be rendered |
+| `:node->cluster` | takes a node and returns which cluster, if any, the node belongs to |
+| `:cluster->parent` | takes a cluster and returns which cluster, if any, it is contained within |
+| `:cluster->descriptor` | takes a cluster and returns a map of attributes onto values describing how the cluster should be rendered |
 
-The rendering attributes described by `:node->descriptor`, `:edge->descriptor`, and `:options` are described in detail [here](http://www.graphviz.org/content/attrs).  String and keyword values are interchangeable.
+The rendering attributes described by `:node->descriptor`, `:edge->descriptor`, `:cluster->descriptor`, and `:options` are described in detail [here](http://www.graphviz.org/content/attrs).  String and keyword values are interchangeable.
 
-The most commonly-used attributes are `label`, which describes the text overlaid on a node or edge, and `shape`, the options for which are described [here](http://www.graphviz.org/content/node-shapes).  For the `:options`, it's sometimes useful to adjust the `dpi`, which controls the size of the image.
+The most commonly-used attributes are `label`, which describes the text overlaid on a node, edge, or cluster, and `shape`, the options for which are described [here](http://www.graphviz.org/content/node-shapes).  For the `:options`, it's sometimes useful to adjust the `dpi`, which controls the size of the image.
 
 An example:
 
@@ -51,6 +56,17 @@ nil
 ```
 
 ![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_graph.png)
+
+Clusters are a way of grouping certain nodes together.  They can be any object you like, including values also used by a node.  Using `:cluster->parent`, they can be nested:
+
+```clj
+> (graph->image (keys g) g
+    :cluster->descriptor (fn [n] {:label n})
+    :node->cluster identity 
+    :cluster->parent {:b :c, :a :c})
+```
+
+![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_cluster_graph.png)
 
 While trees are a special case of graphs, using `view-graph` to visualize trees can be a little indirect.  To make this simpler, there's a `view-tree` function, which is modeled after Clojure's `tree-seq` operator.  This function takes three parameters, `branch?`, `children`, and `root`, followed by zero or more of the keyword arguments taken by `view-graph`.  This can make it easy to visualize hierarchical structures:
 

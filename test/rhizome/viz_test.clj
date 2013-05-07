@@ -14,19 +14,26 @@
 (def t-1
   '([1 2] ([3 4] ([5 6 7]))))
 
+(def pause 2000)
 
 (deftest test-viz
   (view-graph (keys g) g
     :node->descriptor (fn [n] {:label n})
-    :edge->descriptor (fn [src dst] {:label (str src " -> " dst)}))
-  (Thread/sleep 2000)
+    :edge->descriptor (fn [src dst] {:label dst}))
+  (Thread/sleep pause)
+
+  (view-graph (keys g) g
+    :node->descriptor (fn [n] {:label n})
+    :node->cluster identity
+    :cluster->parent {:a :b})
+  (Thread/sleep pause)
 
   (view-tree sequential? seq t-0
     :node->descriptor (fn [n] {:label (when (number? n) (str n))}))
-  (Thread/sleep 2000)
+  (Thread/sleep pause)
 
   (view-tree list? seq t-1
     :node->descriptor (fn [n] {:label (when (vector? n) n)}))
-  (Thread/sleep 2000)
+  (Thread/sleep pause)
 
   )
