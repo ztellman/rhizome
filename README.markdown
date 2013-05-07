@@ -60,7 +60,7 @@ nil
 Clusters are a way of grouping certain nodes together.  They can be any object you like, including values also used by a node.  Using `:cluster->parent`, they can be nested:
 
 ```clj
-> (graph->image (keys g) g
+> (view-graph (keys g) g
     :cluster->descriptor (fn [n] {:label n})
     :node->cluster identity 
     :cluster->parent {:b :c, :a :c})
