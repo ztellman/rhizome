@@ -34,8 +34,10 @@
     (map
       (fn [[k v]]
         (if-let [[k* f] (option-translations k)]
-          [k* (f v)]
+          (when-not (contains? m k*)
+            [k* (f v)])
           [k v])))
+    (remove nil?)
     (into {})))
 
 ;;;
