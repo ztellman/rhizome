@@ -62,6 +62,15 @@
   (let [bytes (:out (sh/sh "dot" "-Tpng" :in s :out-enc :bytes))]
     (ImageIO/read (io/input-stream bytes))))
 
+(defn save-image
+  "Saves the given image buffer to the given filename. The default
+file type for the image is png, but an optional type may be supplied
+as a third argument."
+  ([filename image] 
+     (save-image filename "png" image))
+  ([filename filetype image] 
+     (ImageIO/write image filetype (io/file filename))))
+
 (def
   ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns a rendered image."}
   graph->image
