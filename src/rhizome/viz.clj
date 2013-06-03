@@ -66,9 +66,9 @@
   "Saves the given image buffer to the given filename. The default
 file type for the image is png, but an optional type may be supplied
 as a third argument."
-  ([filename image] 
-     (save-image filename "png" image))
-  ([filename filetype image] 
+  ([image filename] 
+     (save-image image "png" filename))
+  ([image filetype filename] 
      (ImageIO/write image filetype (io/file filename))))
 
 (def
@@ -81,6 +81,13 @@ as a third argument."
   view-graph
   (comp view-image dot->image graph->dot))
 
+(defn save-graph
+  "Takes a graph descriptor in the style of `graph->dot`, and saves the image to disk."
+  [nodes adjacent & {:keys [filename] :as options}]
+  (-> (apply graph->dot nodes adjacent (apply concat options))
+    dot->image
+    (save-image filename)))
+
 (def
   ^{:doc "Takes a tree descriptor in the style of `tree->dot`, and returns a rendered image."}
   tree->image
@@ -91,3 +98,9 @@ as a third argument."
   view-tree
   (comp view-image dot->image tree->dot))
 
+(defn save-tree
+  "Takes a graph descriptor in the style of `graph->dot`, and saves the image to disk."
+  [branch? children root & {:keys [filename] :as options}]
+  (-> (apply tree->dot branch? children root (apply concat options))
+    dot->image
+    (save-image filename)))
