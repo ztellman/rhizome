@@ -7,7 +7,7 @@ Rhizome is a library for visualizing graph and tree structures.
 To include in your project, add this to your `project.clj`:
 
 ```clj
-[rhizome "0.1.7"]
+[rhizome "0.1.8"]
 ```
 
 
