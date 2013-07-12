@@ -181,17 +181,14 @@
              node-options (:node options)]
          (str
            ;; graph[...]
-           (when-not subgraph?
-             "graph[")
+           "graph["
            (-> (merge default-options options)
              (update-in [:fontname] #(or % (when subgraph? "Monospace")))
              (assoc :vertical? vertical?)
              (dissoc :edge :node)
              translate-options
              (format-options ", "))
-           (when-not subgraph?
-             "]")
-           "\n"
+           "]\n"
 
            ;; node[...]
            "node["

@@ -2,6 +2,7 @@
   (:use
     [rhizome.dot])
   (:require
+    [clojure.string :as str]
     [clojure.java.shell :as sh]
     [clojure.java.io :as io])
   (:import
@@ -59,8 +60,19 @@
   "Takes a string containing a GraphViz dot file, and renders it to an image.  This requires that GraphViz
    is installed on the local machine."
   [s]
-  (let [bytes (:out (sh/sh "dot" "-Tpng" :in s :out-enc :bytes))]
-    (ImageIO/read (io/input-stream bytes))))
+  (let [{:keys [out err]} (sh/sh "dot" "-Tpng" :in s :out-enc :bytes)]
+    (or
+      (ImageIO/read (io/input-stream out))
+      (throw (IllegalArgumentException.
+               (apply
+                 str err "\n"
+                 (interleave
+                   (map
+                     (fn [idx s]
+                       (format "%3d: %s" idx s))
+                     (range)
+                     (str/split-lines s))
+                   (repeat "\n"))))))))
 
 (defn save-image
   "Saves the given image buffer to the given filename. The default
