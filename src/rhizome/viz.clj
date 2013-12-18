@@ -56,6 +56,17 @@
        (java.awt.EventQueue/invokeLater
          #(send-to-front frame)))))
 
+(defn- format-error [s err]
+  (apply str
+    err "\n"
+    (interleave
+      (map
+        (fn [idx s]
+          (format "%3d: %s" idx s))
+        (range)
+        (str/split-lines s))
+      (repeat "\n"))))
+
 (defn dot->image
   "Takes a string containing a GraphViz dot file, and renders it to an image.  This requires that GraphViz
    is installed on the local machine."
@@ -63,16 +74,16 @@
   (let [{:keys [out err]} (sh/sh "dot" "-Tpng" :in s :out-enc :bytes)]
     (or
       (ImageIO/read (io/input-stream out))
-      (throw (IllegalArgumentException.
-               (apply
-                 str err "\n"
-                 (interleave
-                   (map
-                     (fn [idx s]
-                       (format "%3d: %s" idx s))
-                     (range)
-                     (str/split-lines s))
-                   (repeat "\n"))))))))
+      (throw (IllegalArgumentException. ^String (format-error s err))))))
+
+(defn dot->svg
+  "Takes a string containing a GraphViz dot file, and returns a string containing SVG.  This requires that GraphViz
+   is installed on the local machine."
+  [s]
+  (let [{:keys [out err]} (sh/sh "dot" "-Tsvg" :in s)]
+    (or
+      out
+      (throw (IllegalArgumentException. ^String (format-error s err))))))
 
 (defn save-image
   "Saves the given image buffer to the given filename. The default
@@ -87,6 +98,11 @@ as a third argument."
   ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns a rendered image."}
   graph->image
   (comp dot->image graph->dot))
+
+(def
+  ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns SVG."}
+  graph->svg
+  (comp dot->svg graph->dot))
 
 (def
   ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and displays a rendered image."}

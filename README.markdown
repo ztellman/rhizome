@@ -7,7 +7,7 @@ Rhizome is a library for visualizing graph and tree structures.
 To include in your project, add this to your `project.clj`:
 
 ```clj
-[rhizome "0.1.9"]
+[rhizome "0.2.0"]
 ```
 
 
@@ -89,6 +89,8 @@ If the value for `label` is not a string, typically it will be displayed as a st
 ```
 
 ![](https://dl.dropboxusercontent.com/u/174179/rhizome/tree_record_example.png)
+
+`rhizome.viz/graph->svg` can be used to render the graph as SCG.
 
 ## License
 
