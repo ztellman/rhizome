@@ -6,21 +6,39 @@
     [clojure.java.shell :as sh]
     [clojure.java.io :as io])
   (:import
+    [java.awt
+     Toolkit]
+    [java.awt.event
+     KeyEvent]
     [javax.imageio
      ImageIO]
     [javax.swing
-     JFrame JLabel JScrollPane ImageIcon]
+     AbstractAction JComponent JFrame JLabel JScrollPane ImageIcon KeyStroke]
     [javax.script
      ScriptEngineManager]))
+
+(def ^:private shortcut-mask
+  (.. Toolkit getDefaultToolkit getMenuShortcutKeyMask))
+
+(def ^:private close-key
+  (KeyStroke/getKeyStroke KeyEvent/VK_W shortcut-mask))
 
 (defn create-frame
   "Creates a frame for viewing graphviz images.  Only useful if you don't want to use the default frame."
   [name]
   (delay
     (let [frame (JFrame. ^String name)
-          image-icon (ImageIcon.)]
+          image-icon (ImageIcon.)
+          pane (-> image-icon JLabel. JScrollPane.)]
+      (doto pane
+        (.. (getInputMap JComponent/WHEN_IN_FOCUSED_WINDOW)
+            (put close-key "closeWindow"))
+        (.. getActionMap (put "closeWindow"
+                              (proxy [AbstractAction] []
+                                (actionPerformed [e]
+                                  (.setVisible frame false))))))
       (doto frame
-        (.add (-> image-icon JLabel. JScrollPane.))
+        (.setContentPane pane)
         (.setSize 1024 768)
         (.setDefaultCloseOperation javax.swing.WindowConstants/HIDE_ON_CLOSE))
       [frame image-icon])))
