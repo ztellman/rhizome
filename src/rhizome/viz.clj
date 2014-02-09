@@ -95,17 +95,20 @@ as a third argument."
      (ImageIO/write image filetype (io/file filename))))
 
 (def
-  ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns a rendered image."}
+  ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns a rendered image."
+    :arglists (-> #'graph->dot meta :arglists)}
   graph->image
   (comp dot->image graph->dot))
 
 (def
-  ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns SVG."}
+  ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns SVG."
+    :arglists (-> #'graph->dot meta :arglists)}
   graph->svg
   (comp dot->svg graph->dot))
 
 (def
-  ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and displays a rendered image."}
+  ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and displays a rendered image."
+    :arglists (-> #'graph->dot meta :arglists)}
   view-graph
   (comp view-image dot->image graph->dot))
 
@@ -117,12 +120,14 @@ as a third argument."
     (save-image filename)))
 
 (def
-  ^{:doc "Takes a tree descriptor in the style of `tree->dot`, and returns a rendered image."}
+  ^{:doc "Takes a tree descriptor in the style of `tree->dot`, and returns a rendered image."
+    :arglists (-> #'tree->dot meta :arglists)}
   tree->image
   (comp dot->image tree->dot))
 
 (def
-  ^{:doc "Takes a tree descriptor in the style of `tree->dot`, and displays a rendered image."}
+  ^{:doc "Takes a tree descriptor in the style of `tree->dot`, and displays a rendered image."
+    :arglists (-> #'tree->dot meta :arglists)}
   view-tree
   (comp view-image dot->image tree->dot))
 
