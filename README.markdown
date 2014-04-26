@@ -57,6 +57,20 @@ nil
 
 ![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_graph.png)
 
+And an example with labeled edges:
+
+```clj
+> (def g-edges
+  {:a {:b :makes
+       :c :takes}
+   :b {:c :takes}
+   :c {:a :makes}})
+#'g-edges
+> (view-graph (keys g) g
+    :node->descriptor (fn [n] {:label n})
+    :edge->descriptor (fn [src dst] {:label (dst (src g-edges))}))
+```
+
 Clusters are a way of grouping certain nodes together.  They can be any object you like, including values also used by a node.  Using `:cluster->parent`, they can be nested:
 
 ```clj
