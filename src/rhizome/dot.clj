@@ -55,6 +55,29 @@
 
 ;;;
 
+(def ^:private ^:dynamic *node->id* nil)
+(def ^:private ^:dynamic *cluster->id* nil)
+(def ^:private ^:dynamic *port->id* nil)
+
+(defn- node->id [n]
+  (*node->id* n))
+
+(defn- cluster->id [s]
+  (*cluster->id* s))
+
+(defn- port->id [s]
+  (*port->id* s))
+
+(defmacro ^:private with-gensyms
+  "Makes sure the mapping of node and clusters onto identifiers is consistent within its scope."
+  [& body]
+  `(binding [*node->id* (or *node->id* (memoize (fn [_#] (gensym "node"))))
+             *cluster->id* (or *cluster->id* (memoize (fn [_#] (gensym "cluster"))))
+             *port->id* (or *port->id* (memoize (fn [_#] (gensym "port"))))]
+     ~@body))
+
+;;;
+
 (defn- format-options-value [v]
   (cond
     (string? v) (str \" (escape-string v) \")
@@ -71,6 +94,13 @@
 
 (defn format-label [label]
   (cond
+    (map? label)
+    (->> label
+      (map (fn [[k v]] (str "{ <" (port->id k) "> " (-> v format-label unwrap-literal) " }")))
+      (interpose " | ")
+      (apply str)
+      ->literal)
+
     (sequential? label)
     (->> label
       (map #(str "{ " (-> % format-label unwrap-literal) " }"))
@@ -108,7 +138,7 @@
 
 (defn- format-node [id {:keys [label shape] :as options}]
   (let [shape (or shape
-                (when (sequential? label)
+                (when (or (map? label) (sequential? label))
                   :record))
         options (assoc options
                   :label (or label "")
@@ -119,22 +149,6 @@
 
 ;;;
 
-(def ^:private ^:dynamic *node->id* nil)
-(def ^:private ^:dynamic *cluster->id* nil)
-
-(defn- node->id [n]
-  (*node->id* n))
-
-(defn- cluster->id [s]
-  (*cluster->id* s))
-
-(defmacro ^:private with-gensyms
-  "Makes sure the mapping of node and clusters onto identifiers is consistent within its scope."
-  [& body]
-  `(binding [*node->id* (or *node->id* (memoize (fn [_#] (gensym "node"))))
-             *cluster->id* (or *cluster->id* (memoize (fn [_#] (gensym "cluster"))))]
-     ~@body))
-
 (defn graph->dot
   "Takes a description of a graph, and returns a string describing a GraphViz dot file.
 
@@ -144,6 +158,8 @@
    & {:keys [directed?
              vertical?
              options
+             port?
+             port->pair
              node->descriptor
              edge->descriptor
              cluster->parent
@@ -151,6 +167,8 @@
              cluster->descriptor]
       :or {directed? true
            vertical? true
+           port? (constantly false)
+           port->pair (constantly nil)
            node->descriptor (constantly nil)
            edge->descriptor (constantly nil)
            cluster->parent (constantly nil)
@@ -211,6 +229,7 @@
             
            ;; nodes
            (->> nodes
+             (filter (complement port?))
              (remove #(not= current-cluster (node->cluster %)))
              (map
                #(format-node (node->id %)
@@ -233,35 +252,40 @@
             
            ;; edges
            (when-not subgraph?
+             (let [node-kind #(cond
+                                (port? %) [:port %]
+                                (node? %) [:node %]
+                                (cluster? %) [:cluster %]
+                                :else nil)
+                   kind-id (fn [type n]
+                             (condp = type
+                               :node (node->id n)
+                               :cluster (cluster->id n)
+                               :port (let [[a b] (port->pair n)]
+                                       (str (node->id a) ":" (port->id b)))))]
+               (->> nodes
+                    ;; filter out destinations that aren't in `nodes`, and differentiate
+                    ;; between nodes and clusters
+                    (mapcat
+                      (fn [node]
+                        (if-let [nodek (node-kind node)]
+                          (map vector
+                               (repeat nodek)
+                               (->> node
+                                    adjacent
+                                    (map node-kind)
+                                    (remove nil?)))
+                          nil)))
 
-             (->> nodes
-                
-               ;; filter out destinations that aren't in `nodes`, and differentiate
-               ;; between nodes and clusters
-               (mapcat
-                 (fn [node]
-                   (map vector
-                     (repeat node)
-                     (->> node
-                       adjacent
-                       (map
-                         #(cond
-                            (node? %) [:node %]
-                            (cluster? %) [:cluster %]
-                            :else nil))
-                       (remove nil?)))))
-                
-               ;; format the edges
-               (map (fn [[a [type b]]]
-                      (format-edge
-                        (node->id a)
-                        (if (= :node type)
-                          (node->id b)
-                          (cluster->id b))
-                        (merge
-                          default-edge-options
-                          {:directed? directed?}
-                          (edge->descriptor a b)))))))
+                    ;; format the edges
+                    (map (fn [[[at a] [bt b]]]
+                           (format-edge
+                             (kind-id at a)
+                             (kind-id bt b)
+                             (merge
+                               default-edge-options
+                               {:directed? directed?}
+                               (edge->descriptor a b))))))))
             
            ["}\n"]))))))
 

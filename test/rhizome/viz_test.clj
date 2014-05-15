@@ -49,3 +49,13 @@
   
 
   )
+
+(deftest test-viz-record
+  (view-graph [:a :b [:a :x] [:a :y]]
+              {[:a :x] [:b]
+               :b [[:a :y] :a]}
+              :node->descriptor {:a {:label (array-map :x "x" :y "y")}
+                                 :b {:label "b"}}
+              :port? vector?
+              :port->pair identity)
+  (Thread/sleep pause))
