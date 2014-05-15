@@ -55,6 +55,29 @@
 
 ;;;
 
+(def ^:private ^:dynamic *node->id* nil)
+(def ^:private ^:dynamic *cluster->id* nil)
+(def ^:private ^:dynamic *port->id* nil)
+
+(defn- node->id [n]
+  (*node->id* n))
+
+(defn- cluster->id [s]
+  (*cluster->id* s))
+
+(defn- port->id [s]
+  (*port->id* s))
+
+(defmacro ^:private with-gensyms
+  "Makes sure the mapping of node and clusters onto identifiers is consistent within its scope."
+  [& body]
+  `(binding [*node->id* (or *node->id* (memoize (fn [_#] (gensym "node"))))
+             *cluster->id* (or *cluster->id* (memoize (fn [_#] (gensym "cluster"))))
+             *port->id* (or *port->id* (memoize (fn [_#] (gensym "port"))))]
+     ~@body))
+
+;;;
+
 (defn- format-options-value [v]
   (cond
     (string? v) (str \" (escape-string v) \")
@@ -118,22 +141,6 @@
       "]")))
 
 ;;;
-
-(def ^:private ^:dynamic *node->id* nil)
-(def ^:private ^:dynamic *cluster->id* nil)
-
-(defn- node->id [n]
-  (*node->id* n))
-
-(defn- cluster->id [s]
-  (*cluster->id* s))
-
-(defmacro ^:private with-gensyms
-  "Makes sure the mapping of node and clusters onto identifiers is consistent within its scope."
-  [& body]
-  `(binding [*node->id* (or *node->id* (memoize (fn [_#] (gensym "node"))))
-             *cluster->id* (or *cluster->id* (memoize (fn [_#] (gensym "cluster"))))]
-     ~@body))
 
 (defn graph->dot
   "Takes a description of a graph, and returns a string describing a GraphViz dot file.
