@@ -94,6 +94,13 @@
 
 (defn format-label [label]
   (cond
+    (map? label)
+    (->> label
+      (map (fn [[k v]] (str "{ <" (port->id k) "> " (-> v format-label unwrap-literal) " }")))
+      (interpose " | ")
+      (apply str)
+      ->literal)
+
     (sequential? label)
     (->> label
       (map #(str "{ " (-> % format-label unwrap-literal) " }"))
@@ -131,7 +138,7 @@
 
 (defn- format-node [id {:keys [label shape] :as options}]
   (let [shape (or shape
-                (when (sequential? label)
+                (when (or (map? label) (sequential? label))
                   :record))
         options (assoc options
                   :label (or label "")
