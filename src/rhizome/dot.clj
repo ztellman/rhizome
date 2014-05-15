@@ -158,6 +158,8 @@
    & {:keys [directed?
              vertical?
              options
+             port?
+             port->pair
              node->descriptor
              edge->descriptor
              cluster->parent
@@ -165,6 +167,8 @@
              cluster->descriptor]
       :or {directed? true
            vertical? true
+           port? (constantly false)
+           port->pair (constantly nil)
            node->descriptor (constantly nil)
            edge->descriptor (constantly nil)
            cluster->parent (constantly nil)
@@ -225,6 +229,7 @@
             
            ;; nodes
            (->> nodes
+             (filter (complement port?))
              (remove #(not= current-cluster (node->cluster %)))
              (map
                #(format-node (node->id %)
@@ -247,35 +252,40 @@
             
            ;; edges
            (when-not subgraph?
+             (let [node-kind #(cond
+                                (port? %) [:port %]
+                                (node? %) [:node %]
+                                (cluster? %) [:cluster %]
+                                :else nil)
+                   kind-id (fn [type n]
+                             (condp = type
+                               :node (node->id n)
+                               :cluster (cluster->id n)
+                               :port (let [[a b] (port->pair n)]
+                                       (str (node->id a) ":" (port->id b)))))]
+               (->> nodes
+                    ;; filter out destinations that aren't in `nodes`, and differentiate
+                    ;; between nodes and clusters
+                    (mapcat
+                      (fn [node]
+                        (if-let [nodek (node-kind node)]
+                          (map vector
+                               (repeat nodek)
+                               (->> node
+                                    adjacent
+                                    (map node-kind)
+                                    (remove nil?)))
+                          nil)))
 
-             (->> nodes
-                
-               ;; filter out destinations that aren't in `nodes`, and differentiate
-               ;; between nodes and clusters
-               (mapcat
-                 (fn [node]
-                   (map vector
-                     (repeat node)
-                     (->> node
-                       adjacent
-                       (map
-                         #(cond
-                            (node? %) [:node %]
-                            (cluster? %) [:cluster %]
-                            :else nil))
-                       (remove nil?)))))
-                
-               ;; format the edges
-               (map (fn [[a [type b]]]
-                      (format-edge
-                        (node->id a)
-                        (if (= :node type)
-                          (node->id b)
-                          (cluster->id b))
-                        (merge
-                          default-edge-options
-                          {:directed? directed?}
-                          (edge->descriptor a b)))))))
+                    ;; format the edges
+                    (map (fn [[[at a] [bt b]]]
+                           (format-edge
+                             (kind-id at a)
+                             (kind-id bt b)
+                             (merge
+                               default-edge-options
+                               {:directed? directed?}
+                               (edge->descriptor a b))))))))
             
            ["}\n"]))))))
 
