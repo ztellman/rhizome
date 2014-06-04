@@ -90,7 +90,7 @@ If the value for `label` is not a string, typically it will be displayed as a st
 
 ![](https://dl.dropboxusercontent.com/u/174179/rhizome/tree_record_example.png)
 
-`rhizome.viz/graph->svg` can be used to render the graph as SCG.
+`rhizome.viz/graph->svg` can be used to render the graph as SVG.
 
 ## License
 

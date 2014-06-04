@@ -139,7 +139,7 @@
   "Takes a description of a graph, and returns a string describing a GraphViz dot file.
 
    Requires two fields: `nodes`, which is a list of the nodes in the graph, and `adjacent`, which
-   is a function tha takes a node and returns a list of adjacent nodes."
+   is a function that takes a node and returns a list of adjacent nodes."
   [nodes adjacent
    & {:keys [directed?
              vertical?
