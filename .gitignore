@@ -12,3 +12,4 @@ pom.xml
 /doc
 push
 .nrepl*
+DS_Store

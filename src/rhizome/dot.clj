@@ -88,7 +88,7 @@
     (pr-str label)))
 
 (defn- format-options [m separator]
-  (->> 
+  (->>
     (update-in m [:label] #(when % (format-label %)))
     (remove (comp nil? second))
     (map
@@ -208,7 +208,7 @@
 
        (interpose "\n"
          (concat
-            
+
            ;; nodes
            (->> nodes
              (remove #(not= current-cluster (node->cluster %)))
@@ -230,12 +230,12 @@
                     (assoc graph-descriptor
                       ::cluster %
                       :options (cluster->descriptor %))))))
-            
+
            ;; edges
            (when-not subgraph?
 
              (->> nodes
-                
+
                ;; filter out destinations that aren't in `nodes`, and differentiate
                ;; between nodes and clusters
                (mapcat
@@ -250,19 +250,26 @@
                             (cluster? %) [:cluster %]
                             :else nil))
                        (remove nil?)))))
-                
+
                ;; format the edges
                (map (fn [[a [type b]]]
-                      (format-edge
-                        (node->id a)
-                        (if (= :node type)
-                          (node->id b)
-                          (cluster->id b))
-                        (merge
-                          default-edge-options
-                          {:directed? directed?}
-                          (edge->descriptor a b)))))))
-            
+                      (let [descriptor (edge->descriptor a b)
+                            format #(format-edge
+                                      (node->id a)
+                                      (if (= :node type)
+                                        (node->id b)
+                                        (cluster->id b))
+                                      (merge
+                                        default-edge-options
+                                        {:directed? directed?}
+                                        %))]
+                        (if (vector? descriptor)
+                          (->> descriptor
+                            (map format)
+                            (interpose "\n")
+                            (apply str))
+                          (format descriptor)))))))
+
            ["}\n"]))))))
 
 (defn tree->dot
