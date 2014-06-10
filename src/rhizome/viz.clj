@@ -7,9 +7,12 @@
     [clojure.java.io :as io])
   (:import
     [java.awt
-     Toolkit]
+     Toolkit
+     Dimension]
     [java.awt.event
      KeyEvent]
+    [java.awt.image
+     RenderedImage]
     [javax.imageio
      ImageIO]
     [javax.swing
@@ -21,7 +24,7 @@
   (.. Toolkit getDefaultToolkit getMenuShortcutKeyMask))
 
 (def ^:private close-key
-  (KeyStroke/getKeyStroke KeyEvent/VK_W shortcut-mask))
+  (KeyStroke/getKeyStroke KeyEvent/VK_W (int shortcut-mask)))
 
 (defn create-frame
   "Creates a frame for viewing graphviz images.  Only useful if you don't want to use the default frame."
@@ -41,9 +44,9 @@
         (.setContentPane pane)
         (.setSize 1024 768)
         (.setDefaultCloseOperation javax.swing.WindowConstants/HIDE_ON_CLOSE))
-      [frame image-icon])))
+      [frame image-icon pane])))
 
-(defonce default-frame (create-frame "rhizome"))
+(def default-frame (create-frame "rhizome"))
 
 (defn- send-to-front
   "Makes absolutely, completely sure that the frame is moved to the front."
@@ -68,7 +71,7 @@
   ([image]
      (view-image default-frame image))
   ([frame image]
-     (let [[^JFrame frame ^ImageIcon image-icon] @frame]
+     (let [[^JFrame frame ^ImageIcon image-icon ^JLabel pane] @frame]
        (.setImage image-icon image)
        (.setVisible frame true)
        (java.awt.EventQueue/invokeLater
@@ -107,9 +110,9 @@
   "Saves the given image buffer to the given filename. The default
 file type for the image is png, but an optional type may be supplied
 as a third argument."
-  ([image filename] 
+  ([image filename]
      (save-image image "png" filename))
-  ([image filetype filename] 
+  ([^RenderedImage image ^String filetype filename]
      (ImageIO/write image filetype (io/file filename))))
 
 (def

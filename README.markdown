@@ -1,4 +1,4 @@
-![](https://dl.dropboxusercontent.com/u/174179/rhizome/rhizome.jpg)
+![](/docs/rhizome.jpg)
 
 Rhizome is a library for visualizing graph and tree structures.
 
@@ -48,25 +48,25 @@ An example:
 nil
 > (def g
     {:a [:b :c]
-	 :b [:c]
-	 :c [:a]})
+         :b [:c]
+         :c [:a]})
 #'g
 > (view-graph (keys g) g
     :node->descriptor (fn [n] {:label n}))
 ```
 
-![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_graph.png)
+![](/docs/example_graph.png)
 
 Clusters are a way of grouping certain nodes together.  They can be any object you like, including values also used by a node.  Using `:cluster->parent`, they can be nested:
 
 ```clj
 > (view-graph (keys g) g
     :cluster->descriptor (fn [n] {:label n})
-    :node->cluster identity 
+    :node->cluster identity
     :cluster->parent {:b :c, :a :c})
 ```
 
-![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_cluster_graph.png)
+![](/docs/example_cluster_graph.png)
 
 While trees are a special case of graphs, using `view-graph` to visualize trees can be a little indirect.  To make this simpler, there's a `view-tree` function, which is modeled after Clojure's `tree-seq` operator.  This function takes three parameters, `branch?`, `children`, and `root`, followed by zero or more of the keyword arguments taken by `view-graph`.  This can make it easy to visualize hierarchical structures:
 
@@ -77,7 +77,7 @@ While trees are a special case of graphs, using `view-graph` to visualize trees 
     :node->descriptor (fn [n] {:label (when (number? n) n)}))
 ```
 
-![](https://dl.dropboxusercontent.com/u/174179/rhizome/example_tree.png)
+![](/docs/example_tree.png)
 
 If the value for `label` is not a string, typically it will be displayed as a string representation of the value.  However, if the value is sequential, then the node will be displayed as a `Record` type:
 
@@ -88,7 +88,7 @@ If the value for `label` is not a string, typically it will be displayed as a st
     :node->descriptor (fn [n] {:label (when (vector? n) n)}))
 ```
 
-![](https://dl.dropboxusercontent.com/u/174179/rhizome/tree_record_example.png)
+![](/docs/tree_record_example.png)
 
 `rhizome.viz/graph->svg` can be used to render the graph as SVG.
 
