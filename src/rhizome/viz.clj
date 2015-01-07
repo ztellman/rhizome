@@ -20,11 +20,16 @@
     [javax.script
      ScriptEngineManager]))
 
-(def ^:private shortcut-mask
-  (.. Toolkit getDefaultToolkit getMenuShortcutKeyMask))
+(defn headless? []
+  (= "true" (System/getProperty "java.awt.headless")))
 
-(def ^:private close-key
-  (KeyStroke/getKeyStroke KeyEvent/VK_W (int shortcut-mask)))
+(when-not (headless?)
+
+  (def ^:private shortcut-mask
+    (.. Toolkit getDefaultToolkit getMenuShortcutKeyMask))
+
+  (def ^:private close-key
+    (KeyStroke/getKeyStroke KeyEvent/VK_W (int shortcut-mask))))
 
 (defn create-frame
   "Creates a frame for viewing graphviz images.  Only useful if you don't want to use the default frame."
