@@ -7,80 +7,24 @@
     [clojure.java.io :as io])
   (:import
     [java.awt
-     Toolkit
-     Dimension]
-    [java.awt.event
-     KeyEvent]
+     Image]
     [java.awt.image
      RenderedImage]
     [javax.imageio
      ImageIO]
     [javax.swing
-     AbstractAction JComponent JFrame JLabel JScrollPane ImageIcon KeyStroke]
-    [javax.script
-     ScriptEngineManager]))
-
-(defn headless? []
-  (= "true" (System/getProperty "java.awt.headless")))
-
-(when-not (headless?)
-
-  (def ^:private shortcut-mask
-    (.. Toolkit getDefaultToolkit getMenuShortcutKeyMask))
-
-  (def ^:private close-key
-    (KeyStroke/getKeyStroke KeyEvent/VK_W (int shortcut-mask))))
-
-(defn create-frame
-  "Creates a frame for viewing graphviz images.  Only useful if you don't want to use the default frame."
-  [name]
-  (delay
-    (let [frame (JFrame. ^String name)
-          image-icon (ImageIcon.)
-          pane (-> image-icon JLabel. JScrollPane.)]
-      (doto pane
-        (.. (getInputMap JComponent/WHEN_IN_FOCUSED_WINDOW)
-            (put close-key "closeWindow"))
-        (.. getActionMap (put "closeWindow"
-                              (proxy [AbstractAction] []
-                                (actionPerformed [e]
-                                  (.setVisible frame false))))))
-      (doto frame
-        (.setContentPane pane)
-        (.setSize 1024 768)
-        (.setDefaultCloseOperation javax.swing.WindowConstants/HIDE_ON_CLOSE))
-      [frame image-icon pane])))
-
-(def default-frame (create-frame "rhizome"))
-
-(defn- send-to-front
-  "Makes absolutely, completely sure that the frame is moved to the front."
-  [^JFrame frame]
-  (doto frame
-    (.setExtendedState JFrame/NORMAL)
-    (.setAlwaysOnTop true)
-    .repaint
-    .toFront
-    .requestFocus
-    (.setAlwaysOnTop false))
-
-  ;; may I one day be forgiven
-  (when-let [applescript (.getEngineByName (ScriptEngineManager.) "AppleScript")]
-    (try
-      (.eval applescript "tell me to activate")
-      (catch Throwable e
-        ))))
+     JOptionPane JLabel ImageIcon]))
 
 (defn view-image
-  "Takes an `image`, and displays it in a window.  If `frame` is not specified, then the default frame will be used."
+  "Takes an `image`, and displays it in a window.
+   Returns a future which will be realized when the user closes the displayed window."
   ([image]
-     (view-image default-frame image))
-  ([frame image]
-     (let [[^JFrame frame ^ImageIcon image-icon ^JLabel pane] @frame]
-       (.setImage image-icon image)
-       (.setVisible frame true)
-       (java.awt.EventQueue/invokeLater
-         #(send-to-front frame)))))
+     (view-image {} image))
+  ([{:keys [title] :or {title "rhizome"}} ^Image image]
+     (future (JOptionPane/showMessageDialog nil
+               (JLabel. (ImageIcon. image))
+               title
+               JOptionPane/PLAIN_MESSAGE))))
 
 (defn- format-error [s err]
   (apply str
