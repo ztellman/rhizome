@@ -18,6 +18,7 @@
 
 (deftest test-viz
   (view-graph (keys g) g
+    :options {:dpi 500}
     :node->descriptor (fn [n] {:label n})
     :edge->descriptor (fn [src dst] {:label dst}))
   (Thread/sleep pause)
@@ -46,6 +47,6 @@
     :options {:rankdir :RL})
   (Thread/sleep pause)
 
-  
+
 
   )

@@ -10,7 +10,8 @@
      Toolkit
      Dimension]
     [java.awt.event
-     KeyEvent]
+     KeyEvent
+     WindowAdapter]
     [java.awt.image
      RenderedImage]
     [javax.imageio
@@ -33,25 +34,34 @@
 
 (defn create-frame
   "Creates a frame for viewing graphviz images.  Only useful if you don't want to use the default frame."
-  [name]
+  [{:keys [name close-promise]}]
   (delay
     (let [frame (JFrame. ^String name)
           image-icon (ImageIcon.)
           pane (-> image-icon JLabel. JScrollPane.)]
       (doto pane
         (.. (getInputMap JComponent/WHEN_IN_FOCUSED_WINDOW)
-            (put close-key "closeWindow"))
-        (.. getActionMap (put "closeWindow"
-                              (proxy [AbstractAction] []
-                                (actionPerformed [e]
-                                  (.setVisible frame false))))))
+          (put close-key "closeWindow"))
+        (.. getActionMap
+          (put "closeWindow"
+            (proxy [AbstractAction] []
+              (actionPerformed [e]
+                (.setVisible frame false))))))
       (doto frame
+        (.addWindowListener
+          (proxy [WindowAdapter] []
+            (windowClosing [e]
+              (.setVisible frame false)
+              (when close-promise
+                (deliver close-promise true)))))
         (.setContentPane pane)
         (.setSize 1024 768)
         (.setDefaultCloseOperation javax.swing.WindowConstants/HIDE_ON_CLOSE))
+
+
       [frame image-icon pane])))
 
-(def default-frame (create-frame "rhizome"))
+(def default-frame (create-frame {:name "rhizome"}))
 
 (defn- send-to-front
   "Makes absolutely, completely sure that the frame is moved to the front."
