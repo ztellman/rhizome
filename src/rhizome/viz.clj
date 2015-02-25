@@ -34,7 +34,7 @@
 
 (defn create-frame
   "Creates a frame for viewing graphviz images.  Only useful if you don't want to use the default frame."
-  [{:keys [name close-promise]}]
+  [{:keys [name close-promise dispose-on-close?]}]
   (delay
     (let [frame (JFrame. ^String name)
           image-icon (ImageIcon.)
@@ -52,6 +52,8 @@
           (proxy [WindowAdapter] []
             (windowClosing [e]
               (.setVisible frame false)
+              (when dispose-on-close?
+                (.dispose frame))
               (when close-promise
                 (deliver close-promise true)))))
         (.setContentPane pane)
