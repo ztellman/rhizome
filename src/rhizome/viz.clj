@@ -109,7 +109,12 @@
   "Takes a string containing a GraphViz dot file, and renders it to an image.  This requires that GraphViz
    is installed on the local machine."
   [s]
-  (let [{:keys [out err]} (sh/sh "dot" "-Tpng" :in s :out-enc :bytes)]
+  (let [{:keys [out err]} (try
+                            (sh/sh "dot" "-Tpng" :in s :out-enc :bytes)
+                            (catch java.io.IOException e
+                              (throw (RuntimeException.
+                                      "Couldn't find `dot` executable: have you installed graphviz?"
+                                      e))))]
     (or
       (ImageIO/read (io/input-stream out))
       (throw (IllegalArgumentException. ^String (format-error s err))))))
