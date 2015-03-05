@@ -112,9 +112,13 @@
   (let [{:keys [out err]} (try
                             (sh/sh "dot" "-Tpng" :in s :out-enc :bytes)
                             (catch java.io.IOException e
-                              (throw (RuntimeException.
-                                      "Couldn't find `dot` executable: have you installed graphviz?"
-                                      e))))]
+                              (try
+                                (sh/sh "dot" "-v")
+                                (throw e) ;; dot is working fine, something else is broken
+                                (catch java.io.IOException e
+                                  (throw (RuntimeException.
+                                          "Couldn't find `dot` executable: have you installed graphviz?"
+                                          e))))))]
     (or
       (ImageIO/read (io/input-stream out))
       (throw (IllegalArgumentException. ^String (format-error s err))))))
