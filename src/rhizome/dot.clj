@@ -3,7 +3,7 @@
 
 ;;;
 
-(def ^:private escapable-characters "|{}\"")
+(def ^:private escapable-characters "\\|{}\"")
 
 (defn- escape-string
   "Escape characters that are significant for the dot format."
