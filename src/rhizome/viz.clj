@@ -164,6 +164,12 @@ as a third argument."
   (comp dot->image tree->dot))
 
 (def
+  ^{:doc "Takes a tree descriptor in the style of `tree->dot`, and returns SVG."
+    :arglists (-> #'tree->dot meta :arglists)}
+  tree->svg
+  (comp dot->svg tree->dot))
+
+(def
   ^{:doc "Takes a tree descriptor in the style of `tree->dot`, and displays a rendered image."
     :arglists (-> #'tree->dot meta :arglists)}
   view-tree
