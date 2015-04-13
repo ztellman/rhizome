@@ -33,6 +33,12 @@
     :node->descriptor (fn [n] {:label (when (number? n) (str n))}))
   (Thread/sleep pause)
 
+  (view-tree sequential? seq t-0
+    :node->descriptor (fn [n] {:label (when (number? n) (str n))})
+    :node->cluster (fn [n] (when (number? n) (rem n 2)))
+    :cluster->descriptor (fn [n] {:label (if (even? n) "even" "odd")}))
+  (Thread/sleep pause)
+
   (view-tree list? seq t-1
     :node->descriptor (fn [n] {:label (when (vector? n) n)}))
   (Thread/sleep pause)

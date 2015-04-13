@@ -279,10 +279,16 @@
    & {:keys [vertical?
              node->descriptor
              edge->descriptor
+             cluster->parent
+             node->cluster
+             cluster->descriptor
              options]
       :or {vertical? true
            node->descriptor (constantly {:label ""})
-           edge->descriptor (constantly nil)}}]
+           edge->descriptor (constantly nil)
+           node->cluster (constantly nil)
+           cluster->parent (constantly nil)
+           cluster->descriptor (constantly nil)}}]
   (let [node->children (atom {})
         nodes (tree-seq
                 (comp branch? second)
@@ -298,4 +304,7 @@
       :vertical? vertical?
       :options options
       :node->descriptor (comp node->descriptor second)
-      :edge->descriptor (fn [a b] (edge->descriptor (second a) (second b))))))
+      :edge->descriptor (fn [a b] (edge->descriptor (second a) (second b)))
+      :node->cluster (comp node->cluster second)
+      :cluster->parent cluster->parent
+      :cluster->descriptor cluster->descriptor)))
