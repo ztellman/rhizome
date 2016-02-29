@@ -102,7 +102,9 @@ as a third argument."
 (def
   ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns SVG."}
   graph->svg
-  (comp dot->svg graph->dot))
+  (comp dot->svg
+        (fn [nodes adjacent & opts]
+          (graph->dot nodes adjacent (merge {:options {:dpi 72}} opts)))))
 
 (def
   ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and displays a rendered image."}
