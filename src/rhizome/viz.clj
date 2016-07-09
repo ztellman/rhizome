@@ -151,7 +151,9 @@ as a third argument."
   ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and returns SVG."
     :arglists (-> #'graph->dot meta :arglists)}
   graph->svg
-  (comp dot->svg graph->dot))
+  (comp dot->svg
+        (fn [nodes adjacent & opts]
+          (graph->dot nodes adjacent (merge {:options {:dpi 72}} opts)))))
 
 (def
   ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and displays a rendered image."
