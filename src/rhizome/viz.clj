@@ -152,8 +152,9 @@ as a third argument."
     :arglists (-> #'graph->dot meta :arglists)}
   graph->svg
   (comp dot->svg
-        (fn [nodes adjacent & opts]
-          (apply graph->dot nodes adjacent (apply concat (merge {:options {:dpi 72}} opts))))))
+        (fn [nodes adjacent & {:as opts}]
+          (let [final-opts (update-in opts [:options :dpi] #(if % % 72))]
+            (apply graph->dot nodes adjacent (apply concat final-opts))))))
 
 (def
   ^{:doc "Takes a graph descriptor in the style of `graph->dot`, and displays a rendered image."
