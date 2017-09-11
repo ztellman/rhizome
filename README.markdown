@@ -16,8 +16,8 @@ Use of this project requires that [Graphviz](http://www.graphviz.org) is install
 | platform | directions |
 |----------|------------|
 | Linux | install `graphviz` using your package manager |
-| OS X | [download the installer](http://www.graphviz.org/Download_macos.php) |
-| Windows |  [download the installer](http://www.graphviz.org/Download_windows.php) |
+| OS X | use `brew install graphiz` or [download the installer](http://www.graphviz.org/Download_macos.php) |
+| Windows | [download the installer](http://www.graphviz.org/Download_windows.php) |
 
 There are two namespaces, `rhizome.dot` and `rhizome.viz`.  The former will take a graph and return a string representation of a Graphviz dot file, the latter takes graphs and renders or displays them.  In practice, you should only need to use `rhizome.viz`.
 
