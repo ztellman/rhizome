@@ -135,6 +135,12 @@
              *cluster->id* (or *cluster->id* (memoize (fn [_#] (gensym "cluster"))))]
      ~@body))
 
+(defn- find-all-clusters
+  [nodes node->cluster cluster->parent]
+  (into #{}
+        (mapcat #(take-while some? (iterate cluster->parent %))
+                (map node->cluster nodes))))
+
 (defn graph->dot
   "Takes a description of a graph, and returns a string describing a GraphViz dot file.
 
@@ -159,8 +165,14 @@
       :as graph-descriptor}]
 
   (with-gensyms
-    (let [current-cluster (::cluster graph-descriptor)
+    (let [graph-descriptor (if (::clusters graph-descriptor)
+                             graph-descriptor
+                             (assoc graph-descriptor
+                                    ::clusters
+                                    (find-all-clusters nodes node->cluster cluster->parent)))
+          current-cluster (::cluster graph-descriptor)
           subgraph? (boolean current-cluster)
+          clusters (::clusters graph-descriptor)
           cluster->nodes (when node->cluster
                            (dissoc (group-by node->cluster nodes) nil))
           cluster? (if cluster->nodes
@@ -219,8 +231,7 @@
                     (node->descriptor %)))))
 
            ;; clusters
-           (->> cluster->nodes
-             keys
+           (->> clusters
              (remove #(not= current-cluster (cluster->parent %)))
              (map
                #(apply graph->dot
